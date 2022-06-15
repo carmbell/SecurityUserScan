@@ -1,17 +1,19 @@
+#Import-module MicrosoftPowerBIMgmt
 Connect-PowerBIServiceAccount -Environment USGovHigh
+
+#Import-Module AzureAD -UseWindowsPowerShell
 Connect-AzureAD -AzureEnvironmentName AzureUSGovernment
+
+#objectid =  (Get-AzureADGroup -SearchString <"Group Name">).ObjectId
 
 $workspaces = (Get-PowerBIWorkspace).Id
 
 ForEach($workspace in $workspaces) {
     $url =  $workspace | ForEach-Object {"https://api.high.powerbigov.us/v1.0/myorg/admin/groups/" + $_ + "/users"}
-    $invoke = $url | ForEach-Object {Invoke-PowerBIRestMethod -Method GET -Url $_ } | ConvertFrom-Json -Depth 2
+    $invoke = $url | ForEach-Object {Invoke-PowerBIRestMethod -Method GET -Url $_ } | ConvertFrom-Json
     $member = $invoke.value.emailAddress| Sort-Object -Unique
-    $securityMember = (Get-AzureADGroupMember -ObjectId 63150c38-e988-45dd-93da-4991fc924206).UserPrincipalName
+    $securityMember = (Get-AzureADGroupMember -ObjectId $objectid).UserPrincipalName
     $removeMembers = $member | Where-Object { $_ –ne $securityMember }
-    $removeMembers | ForEach-Object{"Remove-PowerBIWorkspaceUser -Id $($workspace) -UserPrincipalName $($_)"}
+    $removeMembers | ForEach-Object{Remove-PowerBIWorkspaceUser -Id $workspace -UserPrincipalName $_}
 
 }
-
-# Remove-PowerBIWorkspaceUser -Id $workspace -UserPrincipalName $_
-# $workspace | ForEach-Object {Remove-PowerBIWorkspaceUser -Id $_ -UserPrincipalName $removeMembers}
