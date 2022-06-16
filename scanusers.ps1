@@ -1,8 +1,8 @@
 #Import-module MicrosoftPowerBIMgmt
-Connect-PowerBIServiceAccount -Environment USGovHigh
+Connect-PowerBIServiceAccount -Environment #<Azure Environment>
 
 #Import-Module AzureAD -UseWindowsPowerShell
-Connect-AzureAD -AzureEnvironmentName AzureUSGovernment
+Connect-AzureAD -AzureEnvironmentName #<Azure Environment>
 
 #objectid =  (Get-AzureADGroup -SearchString <"Group Name">).ObjectId
 
